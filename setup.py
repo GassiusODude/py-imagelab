@@ -3,7 +3,7 @@ from setuptools.extension import Extension
 from sphinx.setup_command import BuildDoc
 cmdclass = {'build_sphinx': BuildDoc}
 
-name = "py-imagelib"
+name = "Python Image Laboratory"
 version = "0.0.0"
 release = "0.0"
 setup(
