@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+"""Modules for making an image look more like a cartoon
+
+References
+----------
+.. [1] Available: https://www.askaswiss.com/2016/01/how-to-create-cartoon-effect-opencv-python.html#:~:text=Using%20OpenCV%20and%20Python%2C%20an,a%20cartoon%20in%20five%20steps%3A&text=Convert%20the%20original%20color%20image,grayscale%20image%20using%20adaptive%20thresholding.
+"""
 import numpy as np
 import cv2
 
@@ -11,36 +17,32 @@ DEFAULT_CARTOONIFY = {
     "adaptive_thresh_block": 9,
     "adaptive_thresh_const": 2,
 }
-
-def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
-    """Cartoonify an input signal
+def cartoonify_process(image_rgb, **kwargs):
+    """Process and image and return cartoonified image
 
     Reduces the number of color levels, remove detail and highlight
     certain edges.
 
     Notes
     -----
-    According to the reference, use a bilateral filter to smooth the
+    According to the reference [1_], use a bilateral filter to smooth the
     image and reduce the color scales.  Then apply edge detection on
     the grayscale of the image and adaptive detection before applying
     the enhanced edges on the blurred image.
 
     Parameters
     ----------
-    filename : str
-        The path to the input image
-
-    out_size : tuple
-        The output image size
-
-    out_file : str
-        The output filename
-
-    References
-    ----------
-    .. [1] Available: https://www.askaswiss.com/2016/01/how-to-create-cartoon-effect-opencv-python.html#:~:text=Using%20OpenCV%20and%20Python%2C%20an,a%20cartoon%20in%20five%20steps%3A&text=Convert%20the%20original%20color%20image,grayscale%20image%20using%20adaptive%20thresholding.
+    image_rgb : Image
+        Image
+    
+    kwargs : dict
+        Keyword arguments
+    
+    Returns
+    -------
+    processed_image : Image
+        The processed image
     """
-
     # -------------  load from keyword arguments or use default  ------------
     n_bilat = kwargs.get("bilateral_stages", 7)
     bilat_diameter = kwargs.get("bilateral_diameter", 9)
@@ -49,17 +51,6 @@ def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
     blur_kernal_size = kwargs.get("blur_kernal_size", 9)
     adapt_threshold_block = kwargs.get("adaptive_thresh_block", 9)
     adapt_threshold_const = kwargs.get("adaptive_thresh_const", 2)
-
-    # ------------------  load image and downsample  ------------------------
-    image_rgb = cv2.imread(filename)
-
-    # identify the downsample
-    down = np.max((int(image_rgb.shape[0] / out_size[0]),
-        int(image_rgb.shape[1] / out_size[1])))
-
-    # downsample by Gaussian pyramid
-    for _ in range(down):
-        image_rgb = cv2.pyrDown(image_rgb)
 
     # ------------------------  bilateral filter  ---------------------------
     for _ in range(n_bilat):
@@ -80,9 +71,44 @@ def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
 
     # enchance edges
     cartoon_image = cv2.bitwise_and(image_rgb, edges)
+    return cartoon_image
+
+
+def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
+    """Cartoonify an input signal
+    
+    Parameters
+    ----------
+    filename : str
+        The path to the input image
+
+    out_size : tuple
+        The output image size
+
+    out_file : str
+        The output filename
+
+    See Also
+    --------
+    cartoonify_process : Function to cartoonify image
+    """
+    # ------------------  load image and downsample  ------------------------
+    image_rgb = cv2.imread(filename)
+
+    # identify the downsample
+    down = np.max((int(image_rgb.shape[0] / out_size[0]),
+        int(image_rgb.shape[1] / out_size[1])))
+
+    # downsample by Gaussian pyramid
+    for _ in range(down):
+        image_rgb = cv2.pyrDown(image_rgb)
+
+    # --------------------------  run carto
+    cartoon_image = cartoonify_process(image_rgb, kwargs)
 
     # -------------------------  save image  --------------------------------
     cv2.imwrite(out_file, cartoon_image)
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -118,3 +144,10 @@ if __name__ == "__main__":
 
     if args.input:
         cartoonify(args.input, (800, 600), out_file=args.output, **spec)
+    
+    else:
+        from py_imagelab.test_with_webcam import test_webcam
+        test_webcam(out=args.output,
+            process=cartoonify_process,
+            params=spec,
+            title="Cartoonify")
