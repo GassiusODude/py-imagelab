@@ -71,7 +71,7 @@ def cartoonify_process(image_rgb, **kwargs):
 
     # enchance edges
     cartoon_image = cv2.bitwise_and(image_rgb, edges)
-    return cartoon_image
+    return cartoon_image, None
 
 
 def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):

@@ -62,15 +62,23 @@ def test_webcam(out=None, process=None, params=None, title="Preview"):
         else:
             if params is None:
                 # no parameters provided
-                processed_frame = process(frame)
+                processed_frame, detections = process(frame)
 
             else:
                 assert isinstance(params, dict), "Expecting dict for params"
                 # process params as keyword dict
-                processed_frame = process(frame, **params)
+                processed_frame, detections = process(frame, **params)
         
         # -----------------------  display frame  ---------------------------
+        # update detection boxes into the image
+        if detections is not None:
+            for (x,y,w,h) in detections:
+                processed_frame = cv2.rectangle(processed_frame,
+                    (x,y), (x+w, y+h), color=(200,0,0), thickness=10)
+
+        # display image
         cv2.imshow(title, processed_frame)
+
         if out is not None:
             out_file.write(processed_frame)
         # -------------------  exit on 'esc' key  ---------------------------
