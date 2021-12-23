@@ -7,7 +7,9 @@ References
 """
 import numpy as np
 import cv2
-
+import os
+from py_imagelab.util import get_file_type, run_process
+from py_imagelab.test_with_webcam import test_webcam
 DEFAULT_CARTOONIFY = {
     "bilateral_stages": 7,
     "bilateral_diameter": 9,
@@ -43,6 +45,9 @@ def cartoonify_process(image_rgb, **kwargs):
     processed_image : Image
         The processed image
     """
+    if isinstance(image_rgb, str):
+        image_rgb = cv2.imread(image_rgb)
+
     # -------------  load from keyword arguments or use default  ------------
     n_bilat = kwargs.get("bilateral_stages", 7)
     bilat_diameter = kwargs.get("bilateral_diameter", 9)
@@ -142,12 +147,10 @@ if __name__ == "__main__":
         "adaptive_thresh_const": args.adapt_thresh_const,
     }
 
-    if args.input:
-        cartoonify(args.input, (800, 600), out_file=args.output, **spec)
+    run_process(
+        process=cartoonify_process,
+        params=spec,
+        title="Cartoonify",
+        in_file=args.input,
+        out_file=args.output)
     
-    else:
-        from py_imagelab.test_with_webcam import test_webcam
-        test_webcam(out=args.output,
-            process=cartoonify_process,
-            params=spec,
-            title="Cartoonify")

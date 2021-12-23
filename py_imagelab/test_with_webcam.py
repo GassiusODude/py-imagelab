@@ -1,6 +1,8 @@
 import cv2
+import os
 
-def test_webcam(out=None, process=None, params=None, title="Preview"):
+
+def test_webcam(out=None, process=None, params=None, title="Preview", cap=0):
     """Debugging function to apply process to input from webcam
 
     This function can be used to test a processing step on
@@ -24,10 +26,17 @@ def test_webcam(out=None, process=None, params=None, title="Preview"):
 
     title : str
         The title for the display window
+    
+    cap : int or str
+        The capture device.  Default to 0 for webcam.
+        If string, could be a video file
     """
     # ---------------------  create video capture  object  ------------------
     # video capture object
-    vc = cv2.VideoCapture(0)
+    if isinstance(cap, str):
+        assert os.path.isfile(cap), "Cap is not a valid file"
+
+    vc = cv2.VideoCapture(cap)
     if not vc.isOpened():
         raise IOError("Unable to open video capture")
 
@@ -55,6 +64,7 @@ def test_webcam(out=None, process=None, params=None, title="Preview"):
         ret, frame = vc.read()
 
         # -----------------------  process the image  -----------------------
+        detections = None
         if process is None:
             # default to just showing the frames
             processed_frame = frame
@@ -90,4 +100,18 @@ def test_webcam(out=None, process=None, params=None, title="Preview"):
 
 
 if __name__ == "__main__":
-    test_webcam()
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument("out", default="", help="Output file")
+    parser.add_argument(
+        "--cap", default="", 
+        help="Video file.  If not provided, use webcam as input")
+    args = parser.parse_args()
+
+    assert len(args.out) > 0, "Expecting an output file"
+    if args.cap == "":
+        cap = 0
+    else:
+        cap = args.cap
+
+    test_webcam(out=args.out, cap=cap)
