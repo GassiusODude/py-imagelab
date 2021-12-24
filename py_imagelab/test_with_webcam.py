@@ -2,7 +2,9 @@ import cv2
 import os
 
 
-def test_webcam(out=None, process=None, params=None, title="Preview", cap=0):
+def test_webcam(
+        out=None, process=None, params=None, title="Preview",
+        cap=0, down=1):
     """Debugging function to apply process to input from webcam
 
     This function can be used to test a processing step on
@@ -37,6 +39,7 @@ def test_webcam(out=None, process=None, params=None, title="Preview", cap=0):
         assert os.path.isfile(cap), "Cap is not a valid file"
 
     vc = cv2.VideoCapture(cap)
+    fps = vc.get(cv2.CAP_PROP_FPS)
     if not vc.isOpened():
         raise IOError("Unable to open video capture")
 
@@ -48,11 +51,14 @@ def test_webcam(out=None, process=None, params=None, title="Preview", cap=0):
         # get dimensions of input from the webcam
         ret, frame = vc.read()
 
+        for _ in range(1, down):
+            frame = cv2.pyrDown(frame)
+
         # prepare output file
         out_file = cv2.VideoWriter(
             out,
             cv2.VideoWriter_fourcc('M', "J", "P", "G"),
-            10,
+            fps,
             (frame.shape[1], frame.shape[0])
         )
 
@@ -63,6 +69,8 @@ def test_webcam(out=None, process=None, params=None, title="Preview", cap=0):
         # get frame from input video capture device
         ret, frame = vc.read()
 
+        for _ in range(1, down):
+            frame = cv2.pyrDown(frame)
         # -----------------------  process the image  -----------------------
         detections = None
         if process is None:

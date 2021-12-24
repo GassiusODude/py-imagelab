@@ -4,9 +4,11 @@ References
 .. [1] https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classifier.html
 """
 import cv2
+from py_imagelab.util import run_process, get_parser
+
 
 class FaceDetectCascade():
-    """
+    """Face Detection using the Haar Cascade model
     """
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier()
@@ -14,8 +16,6 @@ class FaceDetectCascade():
         # load face model from cv2 installation folder
         dir_data = cv2.__path__[0] + '/data/'
         self.face_cascade.load(dir_data + 'haarcascade_frontalface_default.xml')
-        #self.face_cascade.load(dir_data + 'haarcascade_frontalface_alt_tree.xml')
-        
 
     def detect_face(self, im):
         im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -24,7 +24,19 @@ class FaceDetectCascade():
         faces = self.face_cascade.detectMultiScale(im_gray)
         return im, faces
 
+
 if __name__ == "__main__":
-    from py_imagelab.test_with_webcam import test_webcam
+    parser = get_parser()
+    args = parser.parse_args()
+
     fdo = FaceDetectCascade()
-    test_webcam(process=fdo.detect_face, title="Face Detection")
+
+    run_process(
+        process=fdo.detect_face,
+        params={},
+        title="Face Detection",
+        in_file=args.input,
+        out_file=args.output,
+        down=args.down,
+        overwrite=args.overwrite,
+    )

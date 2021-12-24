@@ -8,7 +8,7 @@ References
 import numpy as np
 import cv2
 import os
-from py_imagelab.util import get_file_type, run_process
+from py_imagelab.util import get_parser, run_process
 from py_imagelab.test_with_webcam import test_webcam
 DEFAULT_CARTOONIFY = {
     "bilateral_stages": 7,
@@ -116,11 +116,9 @@ def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
 
 
 if __name__ == "__main__":
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument("input", default="", help="Input file")
-    parser.add_argument("--output", default="/tmp/cartoon.png",
-        help="Output image file")
+    # get base parser (input, output, down)
+    parser = get_parser()
+    
     parser.add_argument("--bi_stages", default=7, type=int,
         help="Number of stages of bilateral filter")
     parser.add_argument("--bi_diameter", default=9, type=int,
@@ -152,5 +150,7 @@ if __name__ == "__main__":
         params=spec,
         title="Cartoonify",
         in_file=args.input,
-        out_file=args.output)
+        out_file=args.output,
+        down=args.down,
+        overwrite=args.overwrite)
     
