@@ -1,7 +1,4 @@
 from setuptools import setup, find_packages
-from setuptools.extension import Extension
-from sphinx.setup_command import BuildDoc
-cmdclass = {'build_sphinx': BuildDoc}
 
 name = "Python Image Laboratory"
 version = "0.0.0"
@@ -14,7 +11,7 @@ setup(
     author="GassiusODude",
     license="MIT",
     packages=find_packages(),
-    install_requires=['numpy', "opencv-python",
+    install_requires=['numpy', "opencv-python", "gradio"
         ],
     dependency_links=[
         ],

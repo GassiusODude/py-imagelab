@@ -9,7 +9,7 @@ def test_webcam(
 
     This function can be used to test a processing step on
     the input from the video capture device.  The output of the
-    process is then displayed.  If nothing is passed, default 
+    process is then displayed.  If nothing is passed, default
     process is to just display the capture.
 
     Parameters
@@ -21,14 +21,14 @@ def test_webcam(
         If none, just display the input from the webcam.
         If provided, apply the function on each input frame and
         display post process result
-    
+
     params : None or Dict
         Dictionary will be passed to the process method as a
         keyword arg.
 
     title : str
         The title for the display window
-    
+
     cap : int or str
         The capture device.  Default to 0 for webcam.
         If string, could be a video file
@@ -57,7 +57,7 @@ def test_webcam(
         # prepare output file
         out_file = cv2.VideoWriter(
             out,
-            cv2.VideoWriter_fourcc('M', "J", "P", "G"),
+            cv2.VideoWriter_fourcc(*'MJPG'),
             fps,
             (frame.shape[1], frame.shape[0])
         )
@@ -76,7 +76,7 @@ def test_webcam(
         if process is None:
             # default to just showing the frames
             processed_frame = frame
-         
+
         else:
             if params is None:
                 # no parameters provided
@@ -86,7 +86,7 @@ def test_webcam(
                 assert isinstance(params, dict), "Expecting dict for params"
                 # process params as keyword dict
                 processed_frame, detections = process(frame, **params)
-        
+
         # -----------------------  display frame  ---------------------------
         # update detection boxes into the image
         if detections is not None:
@@ -102,7 +102,7 @@ def test_webcam(
         # -------------------  exit on 'esc' key  ---------------------------
         if cv2.waitKey(1) == 27:
             break
-    
+
     vc.release()
     cv2.destroyAllWindows()
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("out", default="", help="Output file")
     parser.add_argument(
-        "--cap", default="", 
+        "--cap", default="",
         help="Video file.  If not provided, use webcam as input")
     args = parser.parse_args()
 

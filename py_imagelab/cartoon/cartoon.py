@@ -36,10 +36,10 @@ def cartoonify_process(image_rgb, **kwargs):
     ----------
     image_rgb : Image
         Image
-    
+
     kwargs : dict
         Keyword arguments
-    
+
     Returns
     -------
     processed_image : Image
@@ -81,7 +81,7 @@ def cartoonify_process(image_rgb, **kwargs):
 
 def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
     """Cartoonify an input signal
-    
+
     Parameters
     ----------
     filename : str
@@ -114,11 +114,43 @@ def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
     # -------------------------  save image  --------------------------------
     cv2.imwrite(out_file, cartoon_image)
 
+def cartoonify_gradio(img, adapt_thres, blur_size, bilat_dia, bilat_col, bilat_space):
+    kwargs = {
+        "adaptive_thresh_const": adapt_thres,
+        #"adaptive_thresh_block": adapt_block,
+        "blur_kernal_size": blur_size,
+        "bilateral_diameter": bilat_dia,
+        "bilateral_sigma_color": bilat_col,
+        "bilateral_sigma_space": bilat_space,
+    }
+    output_image,_ = cartoonify_process(img, **kwargs)
+
+    return output_image
+
+def run_gradio(share=False):
+    import gradio as gr
+    iface = gr.Interface(
+        fn=cartoonify_gradio,
+        inputs=[
+            gr.inputs.Image(shape=(512,512)),
+            gr.inputs.Slider(1, 20, 1),         # adapt thres
+            #gr.inputs.Slider(3, 20, 2),         # adapt block
+            gr.inputs.Slider(1, 21, 2),         # blur size
+            gr.inputs.Slider(1, 21, 1),         # bilat dia
+            gr.inputs.Slider(1, 21, 1),         # bilat color
+            gr.inputs.Slider(1, 21, 1),         # bilat space
+
+        ],
+        outputs=["image"]
+    )
+
+    iface.launch(share=share)
 
 if __name__ == "__main__":
     # get base parser (input, output, down)
     parser = get_parser()
-    
+    parser.add_argument("--gradio", action="store_true")
+    parser.add_argument("--share", action="store_true")
     parser.add_argument("--bi_stages", default=7, type=int,
         help="Number of stages of bilateral filter")
     parser.add_argument("--bi_diameter", default=9, type=int,
@@ -135,22 +167,24 @@ if __name__ == "__main__":
         help="Adaptive threshold constant")
     args = parser.parse_args()
 
-    spec = {
-        "bilateral_stages": args.bi_stages,
-        "bilateral_diameter": args.bi_diameter,
-        "bilateral_sigma_color": args.bi_sigma_color,
-        "bilateral_sigma_space": args.bi_sigma_space,
-        "blur_kernal_size":args.blur_kernal_size,
-        "adaptive_thresh_block": args.adapt_thresh_block,
-        "adaptive_thresh_const": args.adapt_thresh_const,
-    }
+    if args.gradio:
+        run_gradio(args.share)
+    else:
+        spec = {
+            "bilateral_stages": args.bi_stages,
+            "bilateral_diameter": args.bi_diameter,
+            "bilateral_sigma_color": args.bi_sigma_color,
+            "bilateral_sigma_space": args.bi_sigma_space,
+            "blur_kernal_size":args.blur_kernal_size,
+            "adaptive_thresh_block": args.adapt_thresh_block,
+            "adaptive_thresh_const": args.adapt_thresh_const,
+        }
 
-    run_process(
-        process=cartoonify_process,
-        params=spec,
-        title="Cartoonify",
-        in_file=args.input,
-        out_file=args.output,
-        down=args.down,
-        overwrite=args.overwrite)
-    
+        run_process(
+            process=cartoonify_process,
+            params=spec,
+            title="Cartoonify",
+            in_file=args.input,
+            out_file=args.output,
+            down=args.down,
+            overwrite=args.overwrite)
