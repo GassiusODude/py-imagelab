@@ -1,4 +1,5 @@
 import mimetypes
+import numpy as np
 import os
 import mimetypes
 mimetypes.init()
@@ -14,7 +15,7 @@ def get_file_type(filepath):
     ----------
     filepath : str
         The file in question
-    
+
     Returns
     -------
     out : str or None
@@ -22,7 +23,7 @@ def get_file_type(filepath):
     """
     if not os.path.isfile(filepath):
         raise IOError("File (%s) does not exist" % filepath)
-    
+
     guess, _ = mimetypes.guess_type(filepath)
 
     if "video" in guess:
@@ -53,7 +54,7 @@ def get_parser():
     return parser
 
 
-def run_process(process, params, title, in_file, out_file, down=1, 
+def run_process(process, params, title, in_file, out_file, down=1,
         overwrite=False):
     """Run process
 
@@ -62,22 +63,22 @@ def run_process(process, params, title, in_file, out_file, down=1,
     process : function
         Function with the following signature
         (processed, detections) = process(in_image, **params)
-    
+
     params : dict
         Dictionary of parameters specific to the process provided
-    
+
     title : str
         The title to display in image.
-    
+
     in_file : str
         The input file or directory, or "" == webcam.
-    
+
     out_file : str
         The output file or directory
-    
+
     down : int
         down sample with pyrDown.
-    
+
     overwrite : bool
         Allow overwrite if true.
     """
@@ -106,6 +107,12 @@ def run_process(process, params, title, in_file, out_file, down=1,
         for _ in range(down):
             image_rgb = cv2.pyrDown(image_rgb)
         out_image, out_detect = process(image_rgb, **params)
+
+        if out_detect is not None:
+            for (x,y,w,h) in out_detect:
+                thickness = int(1 + np.log10(np.min((w,h))))
+                out_image = cv2.rectangle(out_image,
+                    (x,y), (x+w, y+h), color=(200,0,0), thickness=thickness)
         cv2.imwrite(out_file, out_image)
 
     elif mode == "video":
@@ -135,10 +142,10 @@ def run_process(process, params, title, in_file, out_file, down=1,
             o_dir = os.path.abspath(out_file[:-len(o_file)])
         else:
             o_dir = os.path.abspath(out_file)
-        
+
         if not os.path.isdir(o_dir):
             os.makedirs(o_dir)
-        
+
         # ------------------------  run process per file  -------------------
         files = os.listdir(in_file)
         for c_file in files:

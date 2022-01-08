@@ -18,10 +18,14 @@ class FaceDetectCascade():
         self.face_cascade.load(dir_data + 'haarcascade_frontalface_default.xml')
 
     def detect_face(self, im):
+
+        if isinstance(im, str):
+            im = cv2.imread(im)
         im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
         im_gray = cv2.equalizeHist(im_gray)
-        
+
         faces = self.face_cascade.detectMultiScale(im_gray)
+
         return im, faces
 
 
@@ -30,6 +34,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     fdo = FaceDetectCascade()
+
 
     run_process(
         process=fdo.detect_face,
