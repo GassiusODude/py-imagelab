@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 References
 ----------
@@ -25,7 +26,6 @@ class FaceDetectCascade():
         im_gray = cv2.equalizeHist(im_gray)
 
         faces = self.face_cascade.detectMultiScale(im_gray)
-
         return im, faces
 
 

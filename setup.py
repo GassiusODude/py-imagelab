@@ -11,10 +11,10 @@ setup(
     author="GassiusODude",
     license="MIT",
     packages=find_packages(),
-    install_requires=['numpy', "opencv-python", "gradio"
-        ],
+    install_requires=['numpy', "opencv-python", "gradio", "dlib"
+    ],
     dependency_links=[
-        ],
+    ],
     setup_requires=["nose>=1.3.7"],
     command_options={
         'build_sphinx': {
