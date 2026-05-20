@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-image-laboratory"
+version = "0.0.0"
+description = "Python Image Processing/Analysis library"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "GassiusODude"}
+]
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "gradio<4.0",
+    "dlib"
+]
+
+[project.urls]
+Homepage = "https://github.com/GassiusODude/py-imagelab"
+
+[tool.setuptools]
+packages = ["py_imagelab"]
+
+# Sphinx configuration block replacing command_options from setup.py
+[tool.sphinx]
+project = "python-image-laboratory"
+version = "0.0.0"
+release = "0.0"
+sourcedir = "py_imagelab/"
+
+# Modern Pytest replacement configuration for [nosetests]
+[tool.pytest.ini_options]
+verbosity = 1
+addopts = """
+    --tb=short
+    --cov=py_imagelab
+    --cov-report=term
+    --pdb
+"""
+
+# Append this to your pyproject.toml
+
+[tool.mypy]
+# Explicitly tell mypy to expect the openCV attribute naming convention
+disable_error_code = ["attr-defined"]
+
+[[tool.mypy.overrides]]
+module = ["dlib.*", "gradio.*"]
+ignore_missing_imports = true

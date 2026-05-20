@@ -1,9 +1,10 @@
 import cv2
 import os
+from typing import Any, Optional
 
 
 def test_webcam(
-        out=None, process=None, params=None, title="Preview",
+        out:Optional[str]=None, process=None, params=None, title="Preview",
         cap=0, down=1):
     """Debugging function to apply process to input from webcam
 

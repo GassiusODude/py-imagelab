@@ -5,6 +5,7 @@ import mimetypes
 mimetypes.init()
 from argparse import ArgumentParser
 import cv2
+from typing import Any, Callable
 from py_imagelab.test_with_webcam import test_webcam
 
 
@@ -36,7 +37,7 @@ def get_file_type(filepath):
         return
 
 
-def get_parser():
+def get_parser() -> ArgumentParser:
     """
     Get the basic argument parser with input, output, down, and overwrite
 
@@ -54,9 +55,12 @@ def get_parser():
     return parser
 
 
-def run_process(process, params, title, in_file, out_file, down=1,
-        overwrite=False):
+def run_process(
+        process: Callable, params:dict, title:str, in_file:str, out_file:str,
+        down:int=1, overwrite:bool=False):
     """Run process
+
+    Run the provided "process" with the associated "params".
 
     Parameters
     ----------
@@ -101,18 +105,20 @@ def run_process(process, params, title, in_file, out_file, down=1,
 
     # ----------------------------  run process  ----------------------------
     if mode == "image":
-        # process single file
         # load file and downsample if provided
         image_rgb = cv2.imread(in_file)
         for _ in range(down):
             image_rgb = cv2.pyrDown(image_rgb)
+
+        # NOTE: process the image
         out_image, out_detect = process(image_rgb, **params)
 
+        # NOTE: if detections...draw rectangles
         if out_detect is not None:
-            for (x,y,w,h) in out_detect:
+            for (x, y, w, h) in out_detect:
                 thickness = int(1 + np.log10(np.min((w,h))))
                 out_image = cv2.rectangle(out_image,
-                    (x,y), (x+w, y+h), color=(200,0,0), thickness=thickness)
+                    (x, y), (x + w, y + h), color=(200, 0, 0), thickness=thickness)
         cv2.imwrite(out_file, out_image)
 
     elif mode == "video":

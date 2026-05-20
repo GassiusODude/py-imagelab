@@ -1,6 +1,13 @@
 #!/usr/bin/python3
 """Modules for making an image look more like a cartoon
 
+Example
+-------
+By default, if no image is provided, the script will default to the
+webcam.
+
+>>> python py_imagelab.cartoon.cartoon
+
 References
 ----------
 .. [1] Available: https://www.askaswiss.com/2016/01/how-to-create-cartoon-effect-opencv-python.html#:~:text=Using%20OpenCV%20and%20Python%2C%20an,a%20cartoon%20in%20five%20steps%3A&text=Convert%20the%20original%20color%20image,grayscale%20image%20using%20adaptive%20thresholding.
@@ -8,8 +15,11 @@ References
 import numpy as np
 import cv2
 import os
+from typing import Callable
 from py_imagelab.util import get_parser, run_process
 from py_imagelab.test_with_webcam import test_webcam
+
+
 DEFAULT_CARTOONIFY = {
     "bilateral_stages": 7,
     "bilateral_diameter": 9,
@@ -44,6 +54,9 @@ def cartoonify_process(image_rgb, **kwargs):
     -------
     processed_image : Image
         The processed image
+
+    detections : None
+        This is a processing step, not a detector.
     """
     if isinstance(image_rgb, str):
         image_rgb = cv2.imread(image_rgb)
