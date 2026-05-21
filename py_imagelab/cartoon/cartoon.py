@@ -23,6 +23,10 @@ from py_imagelab.test_with_webcam import test_webcam
 
 logger = logging.getLogger(__name__)
 
+# os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
+# os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
+
+
 DEFAULT_CARTOONIFY = {
     "bilateral_stages": 7,
     "bilateral_diameter": 9,
@@ -154,13 +158,13 @@ def run_gradio(share=False):
     iface = gr.Interface(
         fn=cartoonify_gradio,
         inputs=[
-            gr.inputs.Image(shape=(512,512)),
-            gr.inputs.Slider(1, 20, 1),         # adapt thres
+            gr.Image(height=512, width=512),
+            gr.Slider(minimum=1, maximum=20, value=1, step=1),          # adapt thres
             #gr.inputs.Slider(3, 20, 2),         # adapt block
-            gr.inputs.Slider(1, 21, 2),         # blur size
-            gr.inputs.Slider(1, 21, 1),         # bilat dia
-            gr.inputs.Slider(1, 21, 1),         # bilat color
-            gr.inputs.Slider(1, 21, 1),         # bilat space
+            gr.Slider(minimum=1, maximum=21, value=2, step=1),          # blur size
+            gr.Slider(minimum=1, maximum=21, value=1, step=1),          # bilat dia
+            gr.Slider(minimum=1, maximum=21, value=1, step=1),          # bilat color
+            gr.Slider(minimum=1, maximum=21, value=1, step=1),          # bilat space
 
         ],
         outputs=["image"]
@@ -214,4 +218,5 @@ if __name__ == "__main__":
             in_file=args.input,
             out_file=args.output,
             down=args.down,
-            overwrite=args.overwrite)
+            overwrite=args.overwrite,
+            a_color=args.color)

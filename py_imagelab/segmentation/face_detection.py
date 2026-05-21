@@ -15,6 +15,7 @@ import logging
 import mediapipe as mp
 import numpy as np
 import os
+import pdb
 from typing import Any
 import urllib.request
 from mediapipe.tasks import python as PythonMod
@@ -48,22 +49,14 @@ class FaceDetectCascade():
         return im, faces
 
 
-
 class RobustFaceDetect():
     """Robust Face Detection handling extreme head tilts and angles
     using the Google MediaPipe BlazeFace machine learning model.
     """
     def __init__(self, min_detection_confidence=0.5):
         # Initialize MediaPipe Face Detection
-        # 1. Download the modern model file locally if it doesn't exist
-        # self.model_path = "blazeface_short_range.tflite"
         self.model_path = os.path.join(
             py_imagelab.__path__[0], "models/blaze_face_full_range.tflite")
-        # self.model_path = "blaze_face_full_range.tflite"
-        if not os.path.exists(self.model_path):
-            print("Downloading face detection model file...")
-            url = "https://googleapis.com"
-            urllib.request.urlretrieve(url, self.model_path)
 
         base_options = PythonMod.BaseOptions(model_asset_path=self.model_path)
         options = VisionMod.FaceDetectorOptions(
@@ -85,9 +78,10 @@ class RobustFaceDetect():
 
         # initialize empty face detection lists
         faces = []
+        frame_height, frame_width, _ = im.shape
 
         if results.detections:
-            # import pdb; pdb.set_trace()
+
             for detection in results.detections:
                 # MediaPipe returns relative bounding boxes (0.0 to 1.0)
                 bbox = detection.bounding_box
@@ -98,6 +92,13 @@ class RobustFaceDetect():
 
                 # Append formatted coordinates to match your test_webcam loop structure
                 faces.append((x, y, width, height))
+
+                for key_point in detection.keypoints:
+                    faces.append((
+                        int(key_point.x * frame_width),
+                        int(key_point.y * frame_height),
+                        3, 3
+                    ))
 
         return im, faces
 
@@ -123,4 +124,5 @@ if __name__ == "__main__":
         out_file=args.output,
         down=args.down,
         overwrite=args.overwrite,
+        a_color=args.color
     )
