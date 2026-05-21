@@ -13,10 +13,12 @@ authors = [
     {name = "GassiusODude"}
 ]
 dependencies = [
+    "colorlog",
     "numpy",
     "opencv-python",
     "gradio<4.0",
-    "dlib"
+    "dlib",
+    "mediapipe" # google face detection
 ]
 
 [project.urls]
@@ -24,6 +26,10 @@ Homepage = "https://github.com/GassiusODude/py-imagelab"
 
 [tool.setuptools]
 packages = ["py_imagelab"]
+
+[tool.setuptools.package-data]
+# Tells setuptools that the "py_imagelab" package contains tflite binaries
+"py_imagelab" = ["models/*.tflite", "*.tflite"]
 
 # Sphinx configuration block replacing command_options from setup.py
 [tool.sphinx]
@@ -42,12 +48,12 @@ addopts = """
     --pdb
 """
 
-# Append this to your pyproject.toml
+
 
 [tool.mypy]
 # Explicitly tell mypy to expect the openCV attribute naming convention
 disable_error_code = ["attr-defined"]
 
 [[tool.mypy.overrides]]
-module = ["dlib.*", "gradio.*"]
+module = ["dlib.*", "gradio.*", "mediapipe.*"]
 ignore_missing_imports = true

@@ -5,9 +5,12 @@ import mimetypes
 mimetypes.init()
 from argparse import ArgumentParser
 import cv2
+import logging
+import tempfile
 from typing import Any, Callable
 from py_imagelab.test_with_webcam import test_webcam
 
+logger = logging.getLogger(__name__)
 
 def get_file_type(filepath):
     """Use mimetypes to guess file type
@@ -46,9 +49,13 @@ def get_parser() -> ArgumentParser:
     parser : ArgumentParser
         The base parser
     """
+    out_file = os.path.join(
+            tempfile.gettempdir(),
+            "image_out")
+    logger.info(f"cartoonify: Writing to default output file: {out_file}")
     parser = ArgumentParser()
     parser.add_argument("--input", default="", help="Input file")
-    parser.add_argument("--output", default="/tmp/cartoon.png",
+    parser.add_argument("--output", default=out_file,
         help="Output image file")
     parser.add_argument("--down", default=1, type=int, help="Downsample image")
     parser.add_argument("--overwrite", action="store_true")
@@ -113,17 +120,18 @@ def run_process(
         # NOTE: process the image
         out_image, out_detect = process(image_rgb, **params)
 
-        # NOTE: if detections...draw rectangles
+        # NOTE: if detections...draw rectangles to highlight
         if out_detect is not None:
             for (x, y, w, h) in out_detect:
                 thickness = int(1 + np.log10(np.min((w,h))))
                 out_image = cv2.rectangle(out_image,
                     (x, y), (x + w, y + h), color=(200, 0, 0), thickness=thickness)
-        cv2.imwrite(out_file, out_image)
+        cv2.imwrite(out_file + ".png", out_image)
 
     elif mode == "video":
         # process single video file
-        test_webcam(out=out_file,
+        # FIXME: figure out the right way to process video file
+        test_webcam(out=out_file + ".avi",
             process=process,
             params=params,
             title=title,
@@ -132,7 +140,7 @@ def run_process(
 
     elif mode == "webcam":
         # process on webcam
-        test_webcam(out=out_file,
+        test_webcam(out=out_file + ".avi",
             process=process,
             params=params,
             title=title,
@@ -153,6 +161,7 @@ def run_process(
             os.makedirs(o_dir)
 
         # ------------------------  run process per file  -------------------
+        # NOTE: loop through the input directory
         files = os.listdir(in_file)
         for c_file in files:
             tmp_file = os.path.join(c_dir, c_file)
@@ -174,9 +183,29 @@ def run_process(
                 cv2.imwrite(out_file, out_image)
 
             elif c_mode == "video":
+                # FIXME: figure out the right way to process video file
+
                 test_webcam(out=out_file,
                     process=process,
                     params=params,
                     title=title,
                     cap=tmp_file,
                     down=down)
+
+def _process_image(in_file:str, down:int, process:Callable, params:dict):
+    # NOTE: read in input image and downsample
+    image_rgb = cv2.imread(in_file)
+    for _ in range(down):
+        image_rgb = cv2.pyrDown(image_rgb)
+
+    # NOTE: process the image
+    out_image, out_detect = process(image_rgb, **params)
+
+    # NOTE: if detections...draw rectangles to highlight
+    if out_detect is not None:
+        for (x, y, w, h) in out_detect:
+            thickness = int(1 + np.log10(np.min((w,h))))
+            out_image = cv2.rectangle(out_image,
+                (x, y), (x + w, y + h), color=(200, 0, 0), thickness=thickness)
+
+    return out_image, out_detect

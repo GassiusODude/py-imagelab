@@ -1,5 +1,6 @@
 import cv2
 import os
+import tempfile
 from typing import Any, Optional
 
 
@@ -69,6 +70,8 @@ def test_webcam(
     while True:
         # get frame from input video capture device
         ret, frame = vc.read()
+        if not ret:
+            break
 
         for _ in range(1, down):
             frame = cv2.pyrDown(frame)

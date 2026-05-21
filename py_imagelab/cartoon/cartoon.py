@@ -14,11 +14,14 @@ References
 """
 import numpy as np
 import cv2
+import logging
 import os
+import tempfile
 from typing import Callable
 from py_imagelab.util import get_parser, run_process
 from py_imagelab.test_with_webcam import test_webcam
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_CARTOONIFY = {
     "bilateral_stages": 7,
@@ -110,6 +113,12 @@ def cartoonify(filename, out_size, out_file="/tmp/cartoon.png", **kwargs):
     --------
     cartoonify_process : Function to cartoonify image
     """
+    if out_file is None:
+        # use temp file called cartoon
+        out_file = os.path.join(
+            tempfile.gettempdir(),
+            "cartoon.png")
+        logger.info(f"cartoonify: Writing to default output file: {out_file}")
     # ------------------  load image and downsample  ------------------------
     image_rgb = cv2.imread(filename)
 
@@ -160,6 +169,9 @@ def run_gradio(share=False):
     iface.launch(share=share)
 
 if __name__ == "__main__":
+    import py_imagelab
+    py_imagelab.enable_color_logging()
+
     # get base parser (input, output, down)
     parser = get_parser()
     parser.add_argument("--gradio", action="store_true")
@@ -181,7 +193,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.gradio:
+        # NOTE: starts gradio hosting...connect with web browser
         run_gradio(args.share)
+
     else:
         spec = {
             "bilateral_stages": args.bi_stages,
